@@ -11,5 +11,8 @@ Optimized for all operating systems
 await Utils.initDataSave();
 
 #use
-DataSave.setString("key","my value");
-String? value=DataSave.getString("key");
+Save
+`DataSave.setString("key","my value");`
+</br>
+Get Value
+`String? value=DataSave.getString("key");`
