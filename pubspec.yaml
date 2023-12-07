@@ -1,6 +1,6 @@
 name: data_save
 description: "datasave for flutter and flutter web"
-version: 0.0.2
+version: 0.0.3
 homepage: 'https://github.com/m2faridi/data_save'
 
 environment:
