@@ -8,18 +8,20 @@ Optimized for all operating systems
 ## Getting Started
 
 # Installing
-`Future<void> main() async {
+```
+Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
     await Utils.dbInit();
     runApp(MaterialApp(home: MyApp()));
-}`
-
+}
+```
 # use
 Save
 </br>
-`DataSave.setString("key","my value");`
-</br>
+`DataSave.setString("key","my value");
+`</br>
 </br>
 Get Value
 </br>
-`String? value=DataSave.getString("key");`
+`String? value=DataSave.getString("key");
+`
