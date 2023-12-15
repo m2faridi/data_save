@@ -11,7 +11,7 @@ Optimized for all operating systems
 ```
 Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await Utils.dbInit();
+    await Utils.initDataSave();
     runApp(MaterialApp(home: MyApp()));
 }
 ```
