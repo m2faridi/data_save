@@ -8,6 +8,8 @@ SharedPreferences? prefs;
 
 Future<void> Init() async {
   prefs = await SharedPreferences.getInstance();
+
+
 }
 
 Future<void> SetString(String key, String value) async {
@@ -27,26 +29,26 @@ Future<void> SetDouble(String key, double value) async {
 }
 
 String? GetString(String key) {
-  return prefs!.getString(key);
+  return prefs!.getString(key)!;
 }
 
 bool? GetBool(String key) {
-  return prefs!.getBool(key);
+  return prefs!.getBool(key)!;
 }
 
 int? GetInt(String key) {
-  return prefs!.getInt(key);
+  return prefs!.getInt(key)!;
 }
 
 double? GetDouble(String key) {
-  return prefs!.getDouble(key);
+  return prefs!.getDouble(key)!;
 }
 
 void RemoveAll() async {
-  prefs!.getKeys();
-  for (String key in prefs!.getKeys()) {
-    await prefs!.remove(key);
-  }
+  // prefs!.getKeys();
+  // for (String key in prefs!.getKeys()) {
+  //   await prefs!.remove(key);
+  // }
 }
 
 
