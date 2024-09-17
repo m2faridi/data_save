@@ -13,7 +13,7 @@ Future<void> SetString(String key,String value) async {
 }
  Future<void> SetBool(String key,bool value) async {
    CreateCookie(key, value.toString(), 30);
-   await 0;
+   await 0;//
  }
  Future<void> SetInt(String key,int value) async {
    CreateCookie(key, value.toString(), 30);
