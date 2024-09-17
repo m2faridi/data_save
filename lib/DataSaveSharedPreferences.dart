@@ -29,19 +29,19 @@ Future<void> SetDouble(String key, double value) async {
 }
 
 String? GetString(String key) {
-  return prefs!.getString(key)!;
+  return prefs!.getString(key);
 }
 
 bool? GetBool(String key) {
-  return prefs!.getBool(key)!;
+  return prefs!.getBool(key);
 }
 
 int? GetInt(String key) {
-  return prefs!.getInt(key)!;
+  return prefs!.getInt(key);
 }
 
-double? GetDouble(String key) {
-  return prefs!.getDouble(key)!;
+double? GetDouble(String key) {//
+  return prefs!.getDouble(key);
 }
 
 void RemoveAll() async {

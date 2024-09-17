@@ -20,7 +20,7 @@ class DataSave {
   }
 
   static Future<void> setDouble(String key, double value) async {
-    await SetDouble(key, value);
+    await SetDouble(key, value);//
   }
 
   static String? getString(String key) {
