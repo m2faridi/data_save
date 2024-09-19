@@ -45,10 +45,10 @@ double? GetDouble(String key) {//
 }
 
 void RemoveAll() async {
-  // prefs!.getKeys();
-  // for (String key in prefs!.getKeys()) {
-  //   await prefs!.remove(key);
-  // }
+  prefs!.getKeys();
+  for (String key in prefs!.getKeys()) {
+    await prefs!.remove(key);
+  }
 }
 
 
