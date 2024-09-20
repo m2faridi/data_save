@@ -66,10 +66,14 @@ double? GetDouble(String key) {
 }
 void CreateCookie(String key, String value, int days) {
   int time = days * 86400;
+  final hostname = html.window.location.hostname; // you probably need this one
+
+  String domain = ".${hostname!}"; // دامنه به صورت خودکار گرفته می‌شود
+
   if (days == 0) {
-    html.document.cookie = "$key=; max-age=$time; path=/;";
+    html.document.cookie = "$key=; max-age=$time; path=/; domain=$domain;";
   } else {
-    html.document.cookie = "$key=$value; max-age=$time; path=/;";
+    html.document.cookie = "$key=$value; max-age=$time; path=/; domain=$domain;";
   }
 }
 String GetCookie(String key) {
