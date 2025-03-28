@@ -1,6 +1,6 @@
 name: data_save
 description: "datasave for flutter and flutter web"
-version: 0.3.3
+version: 0.3.5
 homepage: 'https://github.com/m2faridi/data_save'
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.0.2
 
-  shared_preferences: ^2.3.2
+  shared_preferences: ^2.3.5
 
 dev_dependencies:
   flutter_test:

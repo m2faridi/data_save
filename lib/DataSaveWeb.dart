@@ -76,23 +76,29 @@ void CreateCookie(String key, String value, int days) {
     html.document.cookie = "$key=$value; max-age=$time; path=/; domain=$domain;";
   }
 }
-String GetCookie(String key) {
-  String? cookies = html.document.cookie!;
-  List<String> listValues = cookies.isNotEmpty ? cookies.split(";") : [];
-  String matchVal = "";
-  for (int i = 0; i < listValues.length; i++) {
-    List<String> map = listValues[i].split("=");
-    String _key = map[0].trim();
-    String _val = map[1].trim();
 
-    if (key == _key) {
-      matchVal = _val;
-      break;
+String GetCookie(String key) {
+  String? cookies = html.document.cookie;
+
+  if (cookies == null || cookies.isEmpty) return "";
+
+  List<String> listValues = cookies.split(";");
+
+  for (var item in listValues) {
+    List<String> parts = item.split("=");
+
+    if (parts.length >= 2) {
+      String _key = parts[0].trim();
+      String _val = parts.sublist(1).join("=").trim();
+
+      if (_key == key) {
+        return _val;
+      }
     }
   }
-  return matchVal;
-}
 
+  return "";
+}
 
 
 
