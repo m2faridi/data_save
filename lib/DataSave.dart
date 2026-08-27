@@ -22,6 +22,12 @@ class DataSave {
     await SetDouble(key, value); //
   }
 
+  /// Stores a larger string in localStorage on web and SharedPreferences on
+  /// native platforms.
+  static Future<void> setLargeString(String key, String value) async {
+    await SetLargeString(key, value);
+  }
+
   static String? getString(String key) {
     return GetString(key);
   }
@@ -38,7 +44,25 @@ class DataSave {
     return GetDouble(key);
   }
 
+  /// Reads a value written with [setLargeString].
+  static String? getLargeString(String key) {
+    return GetLargeString(key);
+  }
+
+  static Future<void> remove(String key) async {
+    await Remove(key);
+  }
+
+  static Future<void> removeLarge(String key) async {
+    await RemoveLarge(key);
+  }
+
+  static Future<void> removeAllLarge() async {
+    await RemoveAllLarge();
+  }
+
   static Future<void> removeAll() async {
     await RemoveAll();
+    await RemoveAllLarge();
   }
 }

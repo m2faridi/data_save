@@ -3,6 +3,9 @@ import 'package:web/web.dart' as web;
 const int _defaultLifetimeDays = 90;
 const int _maxCookieSize = 4096;
 const String _cookiePath = '/';
+const String _largeStoragePrefix = 'data_save.large.';
+
+final Map<String, String> _largeMemoryFallback = <String, String>{};
 
 Future<void> Init() => Future<void>.value();
 
@@ -18,6 +21,20 @@ Future<void> SetInt(String key, int value) => SetString(key, value.toString());
 
 Future<void> SetDouble(String key, double value) =>
     SetString(key, value.toString());
+
+Future<void> SetLargeString(String key, String value) {
+  _validateStorageKey(key);
+  _largeMemoryFallback[key] = value;
+
+  try {
+    web.window.localStorage.setItem(_largeStorageKey(key), value);
+  } catch (_) {
+    // Some browsers can disable persistent storage. Keep the value available
+    // for the lifetime of the current page as a graceful fallback.
+  }
+
+  return Future<void>.value();
+}
 
 String? GetString(String key) => GetCookie(key);
 
@@ -44,6 +61,65 @@ double? GetDouble(String key) {
   return value == null ? null : double.tryParse(value);
 }
 
+String? GetLargeString(String key) {
+  if (key.isEmpty) return null;
+
+  try {
+    final value = web.window.localStorage.getItem(_largeStorageKey(key));
+    if (value != null) {
+      _largeMemoryFallback[key] = value;
+    } else {
+      _largeMemoryFallback.remove(key);
+    }
+    return value;
+  } catch (_) {
+    // Fall through to the in-memory value.
+  }
+
+  return _largeMemoryFallback[key];
+}
+
+Future<void> Remove(String key) {
+  if (key.isEmpty) return Future<void>.value();
+  _expireCookie(Uri.encodeComponent(key));
+  return Future<void>.value();
+}
+
+Future<void> RemoveLarge(String key) {
+  if (key.isEmpty) return Future<void>.value();
+
+  _largeMemoryFallback.remove(key);
+  try {
+    web.window.localStorage.removeItem(_largeStorageKey(key));
+  } catch (_) {
+    // The in-memory value has still been removed.
+  }
+
+  return Future<void>.value();
+}
+
+Future<void> RemoveAllLarge() {
+  _largeMemoryFallback.clear();
+
+  try {
+    final storage = web.window.localStorage;
+    final keys = <String>[];
+    for (var index = 0; index < storage.length; index++) {
+      final key = storage.key(index);
+      if (key != null && key.startsWith(_largeStoragePrefix)) {
+        keys.add(key);
+      }
+    }
+    for (final key in keys) {
+      storage.removeItem(key);
+    }
+  } catch (_) {
+    // The in-memory values have still been removed.
+  }
+
+  return Future<void>.value();
+}
+
 Future<void> RemoveAll() {
   final cookieNames = _cookieEntries().map((entry) => entry.$1).toSet();
 
@@ -59,9 +135,7 @@ Future<void> RemoveAll() {
 /// Values and names are URI-encoded so delimiter characters and Unicode are
 /// stored safely. Passing zero for [days] removes the cookie.
 void CreateCookie(String key, String value, int days) {
-  if (key.isEmpty) {
-    throw ArgumentError.value(key, 'key', 'Cookie keys cannot be empty.');
-  }
+  _validateStorageKey(key);
   if (days < 0) {
     throw ArgumentError.value(days, 'days', 'Days cannot be negative.');
   }
@@ -186,4 +260,13 @@ bool _supportsDomainAttribute(String hostname) {
       .split('.')
       .every((part) => int.tryParse(part) != null);
   return !isIpv4 && !hostname.contains(':');
+}
+
+String _largeStorageKey(String key) =>
+    '$_largeStoragePrefix${Uri.encodeComponent(key)}';
+
+void _validateStorageKey(String key) {
+  if (key.isEmpty) {
+    throw ArgumentError.value(key, 'key', 'Storage keys cannot be empty.');
+  }
 }

@@ -48,10 +48,35 @@ void main() {
   test('removeAll removes stored values', () async {
     await DataSave.setString('first', 'one');
     await DataSave.setString('second', 'two');
+    await DataSave.setLargeString('large', 'three');
 
     await DataSave.removeAll();
 
     expect(DataSave.getString('first'), isNull);
     expect(DataSave.getString('second'), isNull);
+    expect(DataSave.getLargeString('large'), isNull);
+  });
+
+  test('stores strings larger than the cookie limit', () async {
+    final value = List<String>.filled(12000, 'x').join();
+
+    await DataSave.setLargeString('large-json', value);
+
+    expect(DataSave.getLargeString('large-json'), value);
+  });
+
+  test('keeps cookie and large storage namespaces separate', () async {
+    await DataSave.setString('same-key', 'cookie');
+    await DataSave.setLargeString('same-key', 'local-storage');
+
+    expect(DataSave.getString('same-key'), 'cookie');
+    expect(DataSave.getLargeString('same-key'), 'local-storage');
+
+    await DataSave.removeLarge('same-key');
+    expect(DataSave.getLargeString('same-key'), isNull);
+    expect(DataSave.getString('same-key'), 'cookie');
+
+    await DataSave.remove('same-key');
+    expect(DataSave.getString('same-key'), isNull);
   });
 }

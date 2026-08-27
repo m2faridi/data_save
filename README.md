@@ -52,6 +52,21 @@ Remove stored values:
 await DataSave.removeAll();
 ```
 
+### Larger strings
+
+Use the large-string API for JSON and other values that can exceed the cookie
+limit. It uses namespaced `localStorage` on web and `SharedPreferences` on
+native platforms:
+
+```dart
+await DataSave.setLargeString('economicCalendar', jsonString);
+
+final jsonString = DataSave.getLargeString('economicCalendar');
+
+await DataSave.removeLarge('economicCalendar');
+await DataSave.removeAllLarge();
+```
+
 ## Web behavior
 
 Web values are stored as first-party cookies for 90 days. Browser cookie limits
