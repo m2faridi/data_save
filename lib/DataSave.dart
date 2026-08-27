@@ -1,6 +1,5 @@
-
 import 'DataSaveSharedPreferences.dart'
-  if (dart.library.html) 'DataSaveWeb.dart';
+    if (dart.library.js_interop) 'DataSaveWeb.dart';
 
 class DataSave {
   static Future<void> init() async {
@@ -20,7 +19,7 @@ class DataSave {
   }
 
   static Future<void> setDouble(String key, double value) async {
-    await SetDouble(key, value);//
+    await SetDouble(key, value); //
   }
 
   static String? getString(String key) {
@@ -39,8 +38,7 @@ class DataSave {
     return GetDouble(key);
   }
 
-  static void removeAll() async {
-    RemoveAll();
+  static Future<void> removeAll() async {
+    await RemoveAll();
   }
 }
-

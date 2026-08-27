@@ -1,104 +1,189 @@
+import 'package:web/web.dart' as web;
 
-import 'dart:html' as html;
+const int _defaultLifetimeDays = 90;
+const int _maxCookieSize = 4096;
+const String _cookiePath = '/';
 
-bool? DBTest;
+Future<void> Init() => Future<void>.value();
 
-Future<void> Init() async {
-
-
+Future<void> SetString(String key, String value) {
+  _setAndVerify(key, value);
+  return Future<void>.value();
 }
-Future<void> SetString(String key,String value) async {
-  CreateCookie(key, value.toString(), 30);
-  await 0;
+
+Future<void> SetBool(String key, bool value) =>
+    SetString(key, value.toString());
+
+Future<void> SetInt(String key, int value) => SetString(key, value.toString());
+
+Future<void> SetDouble(String key, double value) =>
+    SetString(key, value.toString());
+
+String? GetString(String key) => GetCookie(key);
+
+bool? GetBool(String key) {
+  switch (GetCookie(key)?.toLowerCase()) {
+    case 'true':
+    case '1':
+      return true;
+    case 'false':
+    case '0':
+      return false;
+    default:
+      return null;
+  }
 }
- Future<void> SetBool(String key,bool value) async {
-   CreateCookie(key, value.toString(), 30);
-   await 0;//
- }
- Future<void> SetInt(String key,int value) async {
-   CreateCookie(key, value.toString(), 30);
-   await 0;
- }
- Future<void> SetDouble(String key,double value) async {
-   CreateCookie(key, value.toString(), 30);
-   await 0;
- }
- String? GetString(String key) {
-   String value = GetCookie(key).toString();
-   if (value.isEmpty) return null;
 
-
-   return value;
- }
- bool? GetBool(String key) {
-   String value = GetCookie(key).toString();
-
-   if (value.isEmpty) return null;
-
-
-   return (value.toLowerCase() == "true" || value.toLowerCase() == "1");
- }
 int? GetInt(String key) {
-  String value = GetCookie(key).toString();
-
-  if (value.isEmpty) return 0;
-
-  return int.parse(value);
+  final value = GetCookie(key);
+  return value == null ? null : int.tryParse(value);
 }
- void RemoveAll() async {
-    String? cookies = html.document.cookie!;
-    List<String> listValues = cookies.isNotEmpty ? cookies.split(";") : [];
-    for (int i = 0; i < listValues.length; i++) {
-      List<String> map = listValues[i].split("=");
-      String _key = map[0].trim();
-      String _val = map[1].trim();
-      CreateCookie(_key,_val,0);
 
-    }
-
-}
 double? GetDouble(String key) {
-  String value = GetCookie(key).toString();
-
-  if (value.isEmpty) return null;
-
-  return double.parse(value);
+  final value = GetCookie(key);
+  return value == null ? null : double.tryParse(value);
 }
-void CreateCookie(String key, String value, int days) {
-  int time = days * 86400;
-  final hostname = html.window.location.hostname; // you probably need this one
 
-  String domain = ".${hostname!}"; // دامنه به صورت خودکار گرفته می‌شود
+Future<void> RemoveAll() {
+  final cookieNames = _cookieEntries().map((entry) => entry.$1).toSet();
 
-  if (days == 0) {
-    html.document.cookie = "$key=; max-age=$time; path=/; domain=$domain;";
-  } else {
-    html.document.cookie = "$key=$value; max-age=$time; path=/; domain=$domain;";
+  for (final encodedName in cookieNames) {
+    _expireCookie(encodedName);
   }
+
+  return Future<void>.value();
 }
 
-String GetCookie(String key) {
-  String? cookies = html.document.cookie;
+/// Creates a host-only cookie that is available throughout the application.
+///
+/// Values and names are URI-encoded so delimiter characters and Unicode are
+/// stored safely. Passing zero for [days] removes the cookie.
+void CreateCookie(String key, String value, int days) {
+  if (key.isEmpty) {
+    throw ArgumentError.value(key, 'key', 'Cookie keys cannot be empty.');
+  }
+  if (days < 0) {
+    throw ArgumentError.value(days, 'days', 'Days cannot be negative.');
+  }
 
-  if (cookies == null || cookies.isEmpty) return "";
+  final encodedName = Uri.encodeComponent(key);
+  if (days == 0) {
+    _expireCookie(encodedName);
+    return;
+  }
 
-  List<String> listValues = cookies.split(";");
+  // Remove cookies created by older versions with an explicit Domain before
+  // replacing them with a safer host-only cookie.
+  _expireCookie(encodedName);
 
-  for (var item in listValues) {
-    List<String> parts = item.split("=");
+  final encodedValue = Uri.encodeComponent(value);
+  final cookie = _buildCookie(
+    encodedName,
+    encodedValue,
+    maxAgeSeconds: days * Duration.secondsPerDay,
+  );
 
-    if (parts.length >= 2) {
-      String _key = parts[0].trim();
-      String _val = parts.sublist(1).join("=").trim();
+  if (cookie.length > _maxCookieSize) {
+    throw ArgumentError.value(
+      value,
+      'value',
+      'The encoded cookie is larger than $_maxCookieSize bytes.',
+    );
+  }
 
-      if (_key == key) {
-        return _val;
-      }
+  web.document.cookie = cookie;
+}
+
+String? GetCookie(String key) {
+  if (key.isEmpty) return null;
+
+  final encodedName = Uri.encodeComponent(key);
+  for (final entry in _cookieEntries()) {
+    if (entry.$1 == encodedName) {
+      return _decodeValue(entry.$2);
     }
   }
 
-  return "";
+  return null;
 }
 
+void _setAndVerify(String key, String value) {
+  CreateCookie(key, value, _defaultLifetimeDays);
 
+  if (GetCookie(key) != value) {
+    throw StateError(
+      'The browser rejected the cookie. Check its privacy settings and quota.',
+    );
+  }
+}
 
+Iterable<(String, String)> _cookieEntries() sync* {
+  final cookies = web.document.cookie;
+  if (cookies.isEmpty) return;
+
+  for (final item in cookies.split(';')) {
+    final separator = item.indexOf('=');
+    if (separator < 0) continue;
+
+    final name = item.substring(0, separator).trim();
+    final value = item.substring(separator + 1).trim();
+    if (name.isNotEmpty) yield (name, value);
+  }
+}
+
+String _decodeValue(String value) {
+  try {
+    return Uri.decodeComponent(value);
+  } on FormatException {
+    // Cookies written by older versions were not encoded.
+    return value;
+  }
+}
+
+void _expireCookie(String encodedName) {
+  final expiredCookie = _buildCookie(
+    encodedName,
+    '',
+    maxAgeSeconds: 0,
+    expires: 'Thu, 01 Jan 1970 00:00:00 GMT',
+  );
+
+  // Delete the new host-only form.
+  web.document.cookie = expiredCookie;
+
+  // Also delete the Domain cookie created by versions <= 0.3.8. Domain is
+  // deliberately omitted for new cookies because host-only cookies work on
+  // localhost/IP addresses and do not leak to sibling subdomains.
+  final hostname = web.window.location.hostname;
+  if (_supportsDomainAttribute(hostname)) {
+    web.document.cookie = '$expiredCookie; Domain=$hostname';
+  }
+}
+
+String _buildCookie(
+  String encodedName,
+  String encodedValue, {
+  required int maxAgeSeconds,
+  String? expires,
+}) {
+  final attributes = <String>[
+    '$encodedName=$encodedValue',
+    'Path=$_cookiePath',
+    'Max-Age=$maxAgeSeconds',
+    if (expires != null) 'Expires=$expires',
+    'SameSite=Lax',
+    if (web.window.location.protocol == 'https:') 'Secure',
+  ];
+
+  return attributes.join('; ');
+}
+
+bool _supportsDomainAttribute(String hostname) {
+  if (!hostname.contains('.')) return false;
+
+  // IPv4 and bracket-free IPv6 hosts must use host-only cookies.
+  final isIpv4 = hostname
+      .split('.')
+      .every((part) => int.tryParse(part) != null);
+  return !isIpv4 && !hostname.contains(':');
+}

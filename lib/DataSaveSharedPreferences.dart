@@ -1,15 +1,9 @@
-
-
 import 'package:shared_preferences/shared_preferences.dart';
-
-
 
 SharedPreferences? prefs;
 
 Future<void> Init() async {
   prefs = await SharedPreferences.getInstance();
-
-
 }
 
 Future<void> SetString(String key, String value) async {
@@ -40,15 +34,13 @@ int? GetInt(String key) {
   return prefs!.getInt(key);
 }
 
-double? GetDouble(String key) {//
+double? GetDouble(String key) {
+  //
   return prefs!.getDouble(key);
 }
 
-void RemoveAll() async {
-  prefs!.getKeys();
+Future<void> RemoveAll() async {
   for (String key in prefs!.getKeys()) {
     await prefs!.remove(key);
   }
 }
-
-
