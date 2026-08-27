@@ -53,10 +53,6 @@ class DataSave {
     await Remove(key);
   }
 
-  static Future<void> removeLarge(String key) async {
-    await RemoveLarge(key);
-  }
-
   static Future<void> removeAllLarge() async {
     await RemoveAllLarge();
   }

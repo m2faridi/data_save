@@ -48,8 +48,6 @@ Future<void> Remove(String key) async {
   await prefs!.remove(key);
 }
 
-Future<void> RemoveLarge(String key) => Remove(key);
-
 Future<void> RemoveAllLarge() => RemoveAll();
 
 Future<void> RemoveAll() async {

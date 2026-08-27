@@ -10,7 +10,8 @@
 - Made `DataSave.removeAll()` awaitable.
 - Added `setLargeString()` and `getLargeString()` using `localStorage` on web
   with an in-memory fallback.
-- Added scoped `remove()`, `removeLarge()`, and `removeAllLarge()` APIs.
+- Added `remove()` for clearing the same key from both web storage modes and
+  `removeAllLarge()` for clearing large-string storage.
 - `removeAll()` now clears both cookies and all `localStorage` values on web;
   large-string methods reuse the normal storage on native platforms.
 - Increased the minimum supported Dart SDK to 3.13.

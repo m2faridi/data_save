@@ -72,11 +72,8 @@ void main() {
     expect(DataSave.getString('same-key'), 'cookie');
     expect(DataSave.getLargeString('same-key'), 'local-storage');
 
-    await DataSave.removeLarge('same-key');
-    expect(DataSave.getLargeString('same-key'), isNull);
-    expect(DataSave.getString('same-key'), 'cookie');
-
     await DataSave.remove('same-key');
+    expect(DataSave.getLargeString('same-key'), isNull);
     expect(DataSave.getString('same-key'), isNull);
   });
 }

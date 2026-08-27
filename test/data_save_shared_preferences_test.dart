@@ -23,7 +23,7 @@ void main() {
     expect(DataSave.getString('same-key'), 'large');
     expect(DataSave.getLargeString('same-key'), 'large');
 
-    await DataSave.removeLarge('same-key');
+    await DataSave.remove('same-key');
     expect(DataSave.getLargeString('same-key'), isNull);
     expect(DataSave.getString('same-key'), isNull);
   });

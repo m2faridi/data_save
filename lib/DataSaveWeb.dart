@@ -80,18 +80,13 @@ String? GetLargeString(String key) {
 
 Future<void> Remove(String key) {
   if (key.isEmpty) return Future<void>.value();
+
   _expireCookie(Uri.encodeComponent(key));
-  return Future<void>.value();
-}
-
-Future<void> RemoveLarge(String key) {
-  if (key.isEmpty) return Future<void>.value();
-
   _largeMemoryFallback.remove(key);
   try {
     web.window.localStorage.removeItem(key);
   } catch (_) {
-    // The in-memory value has still been removed.
+    // The cookie and in-memory value have still been removed.
   }
 
   return Future<void>.value();

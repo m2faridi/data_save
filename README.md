@@ -63,7 +63,7 @@ await DataSave.setLargeString('economicCalendar', jsonString);
 
 final jsonString = DataSave.getLargeString('economicCalendar');
 
-await DataSave.removeLarge('economicCalendar');
+await DataSave.remove('economicCalendar');
 await DataSave.removeAllLarge();
 ```
 
