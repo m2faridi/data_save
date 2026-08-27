@@ -3,7 +3,6 @@ import 'package:web/web.dart' as web;
 const int _defaultLifetimeDays = 90;
 const int _maxCookieSize = 4096;
 const String _cookiePath = '/';
-const String _largeStoragePrefix = 'data_save.large.';
 
 final Map<String, String> _largeMemoryFallback = <String, String>{};
 
@@ -27,7 +26,7 @@ Future<void> SetLargeString(String key, String value) {
   _largeMemoryFallback[key] = value;
 
   try {
-    web.window.localStorage.setItem(_largeStorageKey(key), value);
+    web.window.localStorage.setItem(key, value);
   } catch (_) {
     // Some browsers can disable persistent storage. Keep the value available
     // for the lifetime of the current page as a graceful fallback.
@@ -65,7 +64,7 @@ String? GetLargeString(String key) {
   if (key.isEmpty) return null;
 
   try {
-    final value = web.window.localStorage.getItem(_largeStorageKey(key));
+    final value = web.window.localStorage.getItem(key);
     if (value != null) {
       _largeMemoryFallback[key] = value;
     } else {
@@ -90,7 +89,7 @@ Future<void> RemoveLarge(String key) {
 
   _largeMemoryFallback.remove(key);
   try {
-    web.window.localStorage.removeItem(_largeStorageKey(key));
+    web.window.localStorage.removeItem(key);
   } catch (_) {
     // The in-memory value has still been removed.
   }
@@ -102,17 +101,7 @@ Future<void> RemoveAllLarge() {
   _largeMemoryFallback.clear();
 
   try {
-    final storage = web.window.localStorage;
-    final keys = <String>[];
-    for (var index = 0; index < storage.length; index++) {
-      final key = storage.key(index);
-      if (key != null && key.startsWith(_largeStoragePrefix)) {
-        keys.add(key);
-      }
-    }
-    for (final key in keys) {
-      storage.removeItem(key);
-    }
+    web.window.localStorage.clear();
   } catch (_) {
     // The in-memory values have still been removed.
   }
@@ -120,14 +109,14 @@ Future<void> RemoveAllLarge() {
   return Future<void>.value();
 }
 
-Future<void> RemoveAll() {
+Future<void> RemoveAll() async {
   final cookieNames = _cookieEntries().map((entry) => entry.$1).toSet();
 
   for (final encodedName in cookieNames) {
     _expireCookie(encodedName);
   }
 
-  return Future<void>.value();
+  await RemoveAllLarge();
 }
 
 /// Creates a host-only cookie that is available throughout the application.
@@ -261,9 +250,6 @@ bool _supportsDomainAttribute(String hostname) {
       .every((part) => int.tryParse(part) != null);
   return !isIpv4 && !hostname.contains(':');
 }
-
-String _largeStorageKey(String key) =>
-    '$_largeStoragePrefix${Uri.encodeComponent(key)}';
 
 void _validateStorageKey(String key) {
   if (key.isEmpty) {

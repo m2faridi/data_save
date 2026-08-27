@@ -63,6 +63,5 @@ class DataSave {
 
   static Future<void> removeAll() async {
     await RemoveAll();
-    await RemoveAllLarge();
   }
 }

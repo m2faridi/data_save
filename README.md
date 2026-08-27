@@ -55,8 +55,8 @@ await DataSave.removeAll();
 ### Larger strings
 
 Use the large-string API for JSON and other values that can exceed the cookie
-limit. It uses namespaced `localStorage` on web and `SharedPreferences` on
-native platforms:
+limit. It uses `localStorage` on web and the same `SharedPreferences` storage
+as the normal API on native platforms:
 
 ```dart
 await DataSave.setLargeString('economicCalendar', jsonString);
@@ -66,6 +66,10 @@ final jsonString = DataSave.getLargeString('economicCalendar');
 await DataSave.removeLarge('economicCalendar');
 await DataSave.removeAllLarge();
 ```
+
+On web, `removeAll()` clears both cookies and the origin's entire
+`localStorage`. On native platforms, normal and large-string methods use the
+same `SharedPreferences` storage.
 
 ## Web behavior
 

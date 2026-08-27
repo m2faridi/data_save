@@ -16,16 +16,16 @@ void main() {
     expect(DataSave.getLargeString('large-json'), value);
   });
 
-  test('keeps normal and large keys separate', () async {
+  test('uses the same storage as the normal API', () async {
     await DataSave.setString('same-key', 'normal');
     await DataSave.setLargeString('same-key', 'large');
 
-    expect(DataSave.getString('same-key'), 'normal');
+    expect(DataSave.getString('same-key'), 'large');
     expect(DataSave.getLargeString('same-key'), 'large');
 
     await DataSave.removeLarge('same-key');
     expect(DataSave.getLargeString('same-key'), isNull);
-    expect(DataSave.getString('same-key'), 'normal');
+    expect(DataSave.getString('same-key'), isNull);
   });
 
   test('removeAll clears both storage modes', () async {

@@ -8,9 +8,11 @@
 - Detect rejected and oversized cookies instead of failing silently.
 - Return `null` for missing or invalid typed values consistently.
 - Made `DataSave.removeAll()` awaitable.
-- Added `setLargeString()` and `getLargeString()` using namespaced
-  `localStorage` on web with an in-memory fallback.
+- Added `setLargeString()` and `getLargeString()` using `localStorage` on web
+  with an in-memory fallback.
 - Added scoped `remove()`, `removeLarge()`, and `removeAllLarge()` APIs.
+- `removeAll()` now clears both cookies and all `localStorage` values on web;
+  large-string methods reuse the normal storage on native platforms.
 - Increased the minimum supported Dart SDK to 3.13.
 
 ## 0.3.6
