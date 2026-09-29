@@ -1,3 +1,9 @@
+## 0.4.5
+
+- Added `DataSave.getKeys()` to list stored keys on native platforms and web.
+- Added `setStringList()` and `getStringList()` with JSON cookie storage on web.
+- Changed `remove()` to return `Future<bool>` indicating removal success.
+
 ## 0.4.4
 
 - Detect the default Windows preferences file during loading, so corrupt-file

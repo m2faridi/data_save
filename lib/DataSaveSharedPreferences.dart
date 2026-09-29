@@ -18,6 +18,10 @@ Future<void> SetString(String key, String value) async {
   await prefs!.setString(key, value);
 }
 
+Future<void> SetStringList(String key, List<String> value) async {
+  await prefs!.setStringList(key, List<String>.of(value));
+}
+
 Future<void> SetBool(String key, bool value) async {
   await prefs!.setBool(key, value);
 }
@@ -36,6 +40,14 @@ String? GetString(String key) {
   return prefs!.getString(key);
 }
 
+List<String>? GetStringList(String key) {
+  return prefs!.getStringList(key);
+}
+
+Set<String> GetKeys() {
+  return prefs!.getKeys();
+}
+
 bool? GetBool(String key) {
   return prefs!.getBool(key);
 }
@@ -51,9 +63,9 @@ double? GetDouble(String key) {
 
 String? GetLargeString(String key) => GetString(key);
 
-Future<void> Remove(String key) async {
-  if (key.isEmpty) return;
-  await prefs!.remove(key);
+Future<bool> Remove(String key) async {
+  if (key.isEmpty) return false;
+  return await prefs!.remove(key);
 }
 
 Future<void> RemoveAllLarge() => RemoveAll();

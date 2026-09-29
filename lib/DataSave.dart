@@ -15,6 +15,12 @@ class DataSave {
     await SetString(key, value);
   }
 
+  /// Stores a string list. On web, the JSON-encoded list uses a cookie and is
+  /// subject to the same size limit as [setString].
+  static Future<void> setStringList(String key, List<String> value) async {
+    await SetStringList(key, value);
+  }
+
   static Future<void> setBool(String key, bool value) async {
     await SetBool(key, value);
   }
@@ -37,6 +43,17 @@ class DataSave {
     return GetString(key);
   }
 
+  /// Reads a value written with [setStringList], or null if the key is missing.
+  static List<String>? getStringList(String key) {
+    return GetStringList(key);
+  }
+
+  /// Returns a snapshot of stored keys. On web, this includes readable cookies
+  /// and localStorage keys, or in-memory large-string keys if storage is blocked.
+  static Set<String> getKeys() {
+    return GetKeys();
+  }
+
   static bool? getBool(String key) {
     return GetBool(key);
   }
@@ -54,8 +71,11 @@ class DataSave {
     return GetLargeString(key);
   }
 
-  static Future<void> remove(String key) async {
-    await Remove(key);
+  /// Returns whether removal succeeded, including when the key was absent.
+  /// Empty keys return false. Native backend errors can still throw; on web,
+  /// blocked storage or a value that remains after removal returns false.
+  static Future<bool> remove(String key) async {
+    return await Remove(key);
   }
 
   static Future<void> removeAllLarge() async {

@@ -5,7 +5,8 @@ One API for storing small values in Flutter applications. `data_save` uses
 
 ## Features
 
-- Supports `String`, `bool`, `int`, and `double` values.
+- Supports `String`, `List<String>`, `bool`, `int`, and `double` values.
+- Lists stored keys and reports whether removing a key succeeded.
 - Uses URI encoding for safe Unicode and delimiter storage on the web.
 - Uses host-only cookies with `SameSite=Lax` and `Secure` on HTTPS.
 - Supports Flutter Web builds compiled to JavaScript or WebAssembly.
@@ -36,21 +37,36 @@ Store and retrieve values:
 
 ```dart
 await DataSave.setString('name', 'Sara');
+await DataSave.setStringList('favorites', ['Dart', 'Flutter']);
 await DataSave.setBool('darkMode', true);
 await DataSave.setInt('launchCount', 4);
 await DataSave.setDouble('volume', 0.75);
 
 final name = DataSave.getString('name');
+final favorites = DataSave.getStringList('favorites');
 final darkMode = DataSave.getBool('darkMode');
 final launchCount = DataSave.getInt('launchCount');
 final volume = DataSave.getDouble('volume');
+final Set<String> keys = DataSave.getKeys();
 ```
+
+`getStringList()` returns `null` for a missing key and preserves empty lists.
+On web, lists are stored as JSON in cookies and share the cookie size limit.
+`getKeys()` returns a snapshot of all SharedPreferences keys on native platforms.
+On web, it combines readable cookie names and the origin's `localStorage` keys,
+without duplicates, and includes in-memory large-string keys if storage is blocked.
 
 Remove stored values:
 
 ```dart
+final bool removed = await DataSave.remove('name');
 await DataSave.removeAll();
 ```
+
+`remove()` reports whether removal succeeded, including when the key was already
+absent. An empty key returns `false`. On web, removal clears both storage modes
+and returns `false` if storage is blocked or a value remains. On native platforms,
+it returns the SharedPreferences result; backend exceptions still propagate.
 
 ### Reset a corrupt Windows preferences file
 

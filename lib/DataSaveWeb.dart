@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:web/web.dart' as web;
 
 const int _defaultLifetimeDays = 90;
@@ -12,6 +14,9 @@ Future<void> SetString(String key, String value) {
   _setAndVerify(key, value);
   return Future<void>.value();
 }
+
+Future<void> SetStringList(String key, List<String> value) =>
+    SetString(key, jsonEncode(value));
 
 Future<void> SetBool(String key, bool value) =>
     SetString(key, value.toString());
@@ -36,6 +41,37 @@ Future<void> SetLargeString(String key, String value) {
 }
 
 String? GetString(String key) => GetCookie(key);
+
+List<String>? GetStringList(String key) {
+  final value = GetCookie(key);
+  if (value == null) return null;
+
+  try {
+    final decoded = jsonDecode(value);
+    if (decoded is List && decoded.every((item) => item is String)) {
+      return List<String>.from(decoded);
+    }
+  } on FormatException {
+    // Values written by other setters may not be JSON lists.
+  }
+  return null;
+}
+
+Set<String> GetKeys() {
+  final keys = _cookieEntries().map((entry) => _decodeValue(entry.$1)).toSet();
+
+  try {
+    final storage = web.window.localStorage;
+    for (var index = 0; index < storage.length; index++) {
+      final key = storage.key(index);
+      if (key != null) keys.add(key);
+    }
+  } catch (_) {
+    keys.addAll(_largeMemoryFallback.keys);
+  }
+
+  return keys;
+}
 
 bool? GetBool(String key) {
   switch (GetCookie(key)?.toLowerCase()) {
@@ -78,18 +114,29 @@ String? GetLargeString(String key) {
   return _largeMemoryFallback[key];
 }
 
-Future<void> Remove(String key) {
-  if (key.isEmpty) return Future<void>.value();
+Future<bool> Remove(String key) async {
+  if (key.isEmpty) return false;
 
-  _expireCookie(Uri.encodeComponent(key));
-  _largeMemoryFallback.remove(key);
+  var success = true;
   try {
-    web.window.localStorage.removeItem(key);
+    _expireCookie(Uri.encodeComponent(key));
+    success = GetCookie(key) == null;
   } catch (_) {
-    // The cookie and in-memory value have still been removed.
+    success = false;
   }
 
-  return Future<void>.value();
+  _largeMemoryFallback.remove(key);
+  try {
+    final storage = web.window.localStorage;
+    storage.removeItem(key);
+    if (storage.getItem(key) != null) success = false;
+  } catch (_) {
+    // The cookie and in-memory value have still been removed, but persistent
+    // storage could not be checked or cleared.
+    success = false;
+  }
+
+  return success;
 }
 
 Future<void> RemoveAllLarge() {
