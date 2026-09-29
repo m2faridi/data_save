@@ -1,3 +1,9 @@
+## 0.4.4
+
+- Detect the default Windows preferences file during loading, so corrupt-file
+  recovery works with `DataSave.init()` without supplying a path or adding any
+  dependency. An explicit `windowsPreferencesFilePath` remains supported.
+
 ## 0.4.3
 
 - Added an optional `windowsPreferencesFilePath` to `DataSave.init()`. If loading

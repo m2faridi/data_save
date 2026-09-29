@@ -10,6 +10,7 @@ Future<void> Init({String? windowsPreferencesFilePath}) async {
   prefs = await loadWithCorruptFileReset(
     SharedPreferences.getInstance,
     filePath: Platform.isWindows ? windowsPreferencesFilePath : null,
+    detectDefaultWindowsPath: Platform.isWindows,
   );
 }
 

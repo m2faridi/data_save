@@ -54,20 +54,24 @@ await DataSave.removeAll();
 
 ### Reset a corrupt Windows preferences file
 
-To discard a corrupt preferences file after a failed load, pass the full path
-of your application's existing `shared_preferences.json` file:
+Windows automatically detects the `shared_preferences.json` file opened by
+SharedPreferences. No path or additional dependency is needed:
 
 ```dart
-await DataSave.init(windowsPreferencesFilePath: preferencesFilePath);
+await DataSave.init();
 ```
 
-On Windows, if loading throws `FormatException`, that file is deleted and the
+On Windows, if loading throws `FormatException`, the detected file is deleted and the
 error is rethrown. Close and reopen the app: preferences will be empty and the
 first successful save recreates the file. **All values in the deleted file are
-lost.** Supply only the path of this application's preferences file.
+lost.**
 
-Other errors (including access and disk errors) do not trigger deletion. Without
-this parameter, initialization behaves as before. Other platforms ignore it.
+Other errors (including access and disk errors) do not trigger deletion.
+Other platforms retain their previous behavior. The optional
+`windowsPreferencesFilePath` argument is still available to override detection;
+if used, supply only the full path of this application's preferences file.
+If the backend does not expose a unique preferences file, automatic deletion is
+skipped and the load error is rethrown.
 This recovers from an unreadable preferences document; it does not prevent
 power-loss corruption or detect damaged JSON stored inside a string value.
 
