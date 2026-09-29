@@ -6,7 +6,7 @@ const String _cookiePath = '/';
 
 final Map<String, String> _largeMemoryFallback = <String, String>{};
 
-Future<void> Init() => Future<void>.value();
+Future<void> Init({String? windowsPreferencesFilePath}) => Future<void>.value();
 
 Future<void> SetString(String key, String value) {
   _setAndVerify(key, value);

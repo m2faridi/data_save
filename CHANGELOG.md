@@ -1,3 +1,10 @@
+## Unreleased
+
+- Added an optional `windowsPreferencesFilePath` to `DataSave.init()`. If loading
+  on Windows throws `FormatException`, the supplied file is deleted so the next
+  launch can start empty. Storage still uses SharedPreferences with no new
+  dependencies; other load errors do not delete data.
+
 ## 0.4.0
 
 - Migrated the web implementation from deprecated `dart:html` APIs to

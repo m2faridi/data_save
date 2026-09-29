@@ -2,8 +2,13 @@ import 'DataSaveSharedPreferences.dart'
     if (dart.library.js_interop) 'DataSaveWeb.dart';
 
 class DataSave {
-  static Future<void> init() async {
-    await Init();
+  /// Loads preferences. On Windows, supplying the full path of the existing
+  /// `shared_preferences.json` opts into deleting it if loading throws a
+  /// [FormatException]. All values in that file are lost. The error is rethrown;
+  /// restart the application to load empty preferences. Other platforms ignore
+  /// [windowsPreferencesFilePath].
+  static Future<void> init({String? windowsPreferencesFilePath}) async {
+    await Init(windowsPreferencesFilePath: windowsPreferencesFilePath);
   }
 
   static Future<void> setString(String key, String value) async {

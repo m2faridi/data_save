@@ -1,9 +1,16 @@
+import 'dart:io';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'src/preferences_recovery.dart';
 
 SharedPreferences? prefs;
 
-Future<void> Init() async {
-  prefs = await SharedPreferences.getInstance();
+Future<void> Init({String? windowsPreferencesFilePath}) async {
+  prefs = await loadWithCorruptFileReset(
+    SharedPreferences.getInstance,
+    filePath: Platform.isWindows ? windowsPreferencesFilePath : null,
+  );
 }
 
 Future<void> SetString(String key, String value) async {
