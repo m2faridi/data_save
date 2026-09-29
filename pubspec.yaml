@@ -1,5 +1,5 @@
 name: data_save
-description: "datasave for flutter and flutter web"
+description: "Simple Flutter storage over native SharedPreferences, with web cookies, localStorage for larger strings, and corrupt Windows preferences reset."
 version: 0.4.5
 homepage: 'https://github.com/m2faridi/data_save'
 

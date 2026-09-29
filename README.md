@@ -1,7 +1,41 @@
 # data_save
 
-One API for storing small values in Flutter applications. `data_save` uses
-`SharedPreferences` on native platforms and persistent cookies on Flutter Web.
+A simple static API for storing preferences in Flutter applications. `data_save`
+builds on `SharedPreferences` on native platforms and adds persistent cookies,
+localStorage for larger strings on web, and automatic reset of corrupt Windows
+preferences files.
+
+## Why choose data_save over using shared_preferences directly?
+
+`data_save` is a convenient choice when your app needs a shared storage helper,
+cookie-based web preferences, or recovery from a corrupt Windows preferences
+file. It bundles these behaviors so you can use them without writing your own
+platform-specific wrapper:
+
+- **Less setup at each call site.** Initialize once with `await DataSave.init()`,
+  then call `DataSave.getString(...)` or `DataSave.setString(...)` directly.
+  There is no preferences instance to pass between screens and services.
+- **Built-in web cookies.** Normal values use cookies with a 90-day lifetime,
+  URI encoding, `SameSite=Lax`, and `Secure` on HTTPS. Writes check for oversized
+  or rejected cookies. This is useful when your app specifically needs
+  cookie-backed preferences; `shared_preferences` uses localStorage on web.
+  See its [storage documentation](https://pub.dev/packages/shared_preferences#storage-location-by-platform).
+- **Two web storage modes through one API.** Use `setLargeString()` and
+  `getLargeString()` for values that exceed cookie limits. These use localStorage,
+  with a page-lifetime memory fallback while localStorage is inaccessible.
+  `getKeys()` combines both stores, and `remove(key)` clears the key from both.
+- **Automatic Windows reset after a decoding failure.** If initialization throws
+  `FormatException`, the detected preferences file is deleted so the next app
+  launch can start with empty preferences. The current initialization still
+  throws, and all values in that file are lost. See
+  [Windows recovery](#reset-a-corrupt-windows-preferences-file) for details.
+
+On native platforms, `data_save` uses the legacy `SharedPreferences` API and
+inherits its storage and cache behavior. String lists, key enumeration, and
+boolean removal results are also available in that API. The added value is the
+convenient interface and the web and Windows behaviors above. For apps that need
+fresh native values across isolates or background engines, consider
+[`SharedPreferencesAsync`](https://pub.dev/packages/shared_preferences#cache-and-async-or-sync-getters).
 
 ## Features
 
