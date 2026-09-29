@@ -1,4 +1,4 @@
-## Unreleased
+## 0.4.3
 
 - Added an optional `windowsPreferencesFilePath` to `DataSave.init()`. If loading
   on Windows throws `FormatException`, the supplied file is deleted so the next
