@@ -14,6 +14,59 @@ void main() {
   tearDown(DataSave.removeAll);
 
   test(
+    'cookie reads observe external writes, additions and deletions immediately',
+    () async {
+      await DataSave.setString('external', 'first');
+      expect(DataSave.getString('external'), 'first');
+      expect(DataSave.getString('added'), isNull);
+
+      web.document.cookie = 'external=second; Path=/';
+      web.document.cookie = 'added=new; Path=/';
+      expect(DataSave.getString('external'), 'second');
+      expect(DataSave.getString('added'), 'new');
+      expect(DataSave.getKeys(), contains('added'));
+
+      web.document.cookie = 'external=; Path=/; Max-Age=0';
+      expect(DataSave.getString('external'), isNull);
+      expect(DataSave.getKeys(), isNot(contains('external')));
+    },
+  );
+
+  test(
+    'typed cookie reads observe a changed value and a changed type',
+    () async {
+      await DataSave.setStringList('changing', ['first']);
+      expect(DataSave.getStringList('changing'), ['first']);
+
+      await DataSave.setStringList('changing', ['second']);
+      expect(DataSave.getStringList('changing'), ['second']);
+
+      await DataSave.setInt('changing', 42);
+      expect(DataSave.getInt('changing'), 42);
+      expect(DataSave.getStringList('changing'), isNull);
+
+      await DataSave.removeAll();
+      expect(DataSave.getString('changing'), isNull);
+      await DataSave.setStringList('changing', []);
+      expect(DataSave.getStringList('changing'), isEmpty);
+    },
+  );
+
+  test(
+    'cookie reads preserve legacy values with invalid URI escapes',
+    () async {
+      web.document.cookie = 'legacy=100%broken; Path=/';
+      web.document.cookie = 'invalid-utf8=%FF; Path=/';
+      await DataSave.setString('encoded%key', 'فارسی');
+
+      expect(DataSave.getString('legacy'), '100%broken');
+      expect(DataSave.getString('invalid-utf8'), '%FF');
+      expect(DataSave.getString('encoded%key'), 'فارسی');
+      expect(DataSave.getKeys(), containsAll(['legacy', 'encoded%key']));
+    },
+  );
+
+  test(
     'round-trips string lists with Unicode, delimiters and empty strings',
     () async {
       final values = <String>[

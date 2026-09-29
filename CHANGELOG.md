@@ -1,3 +1,11 @@
+## 0.4.6
+
+- Clear native preferences in one backend operation instead of removing each
+  key separately, including when calling `removeAllLarge()`.
+- Reuse parsed web cookies while the browser's cookie header is unchanged;
+  external changes and expiration remain visible on the next read.
+- Handle invalid percent escapes in legacy cookies without disrupting reads.
+
 ## 0.4.5
 
 - Added `DataSave.getKeys()` to list stored keys on native platforms and web.

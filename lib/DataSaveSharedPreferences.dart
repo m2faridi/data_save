@@ -71,7 +71,7 @@ Future<bool> Remove(String key) async {
 Future<void> RemoveAllLarge() => RemoveAll();
 
 Future<void> RemoveAll() async {
-  for (String key in prefs!.getKeys()) {
-    await prefs!.remove(key);
-  }
+  // Clear in one backend operation instead of writing once for every key.
+  // SharedPreferences applies its configured prefix and allowList here.
+  await prefs!.clear();
 }

@@ -7,6 +7,8 @@ const int _maxCookieSize = 4096;
 const String _cookiePath = '/';
 
 final Map<String, String> _largeMemoryFallback = <String, String>{};
+String? _lastCookieHeader;
+Map<String, String> _cachedCookieValues = const <String, String>{};
 
 Future<void> Init({String? windowsPreferencesFilePath}) => Future<void>.value();
 
@@ -58,7 +60,7 @@ List<String>? GetStringList(String key) {
 }
 
 Set<String> GetKeys() {
-  final keys = _cookieEntries().map((entry) => _decodeValue(entry.$1)).toSet();
+  final keys = _readCookies().keys.map(_decodeValue).toSet();
 
   try {
     final storage = web.window.localStorage;
@@ -152,7 +154,7 @@ Future<void> RemoveAllLarge() {
 }
 
 Future<void> RemoveAll() async {
-  final cookieNames = _cookieEntries().map((entry) => entry.$1).toSet();
+  final cookieNames = _readCookies().keys.toList();
 
   for (final encodedName in cookieNames) {
     _expireCookie(encodedName);
@@ -201,15 +203,7 @@ void CreateCookie(String key, String value, int days) {
 
 String? GetCookie(String key) {
   if (key.isEmpty) return null;
-
-  final encodedName = Uri.encodeComponent(key);
-  for (final entry in _cookieEntries()) {
-    if (entry.$1 == encodedName) {
-      return _decodeValue(entry.$2);
-    }
-  }
-
-  return null;
+  return _readCookies()[Uri.encodeComponent(key)];
 }
 
 void _setAndVerify(String key, String value) {
@@ -222,18 +216,29 @@ void _setAndVerify(String key, String value) {
   }
 }
 
-Iterable<(String, String)> _cookieEntries() sync* {
+Map<String, String> _readCookies() {
+  // Always read the browser's current cookie header so external writes and
+  // expiration remain visible. Reuse parsing and decoding only while it matches.
   final cookies = web.document.cookie;
-  if (cookies.isEmpty) return;
+  if (cookies == _lastCookieHeader) return _cachedCookieValues;
 
+  final values = <String, String>{};
   for (final item in cookies.split(';')) {
     final separator = item.indexOf('=');
     if (separator < 0) continue;
 
     final name = item.substring(0, separator).trim();
     final value = item.substring(separator + 1).trim();
-    if (name.isNotEmpty) yield (name, value);
+    // Duplicate names can occur at different paths. Keep the browser's first
+    // match, just as the uncached lookup did.
+    if (name.isNotEmpty) {
+      values.putIfAbsent(name, () => _decodeValue(value));
+    }
   }
+
+  _lastCookieHeader = cookies;
+  _cachedCookieValues = values;
+  return values;
 }
 
 String _decodeValue(String value) {
@@ -241,6 +246,9 @@ String _decodeValue(String value) {
     return Uri.decodeComponent(value);
   } on FormatException {
     // Cookies written by older versions were not encoded.
+    return value;
+  } on ArgumentError {
+    // Invalid percent escapes can throw ArgumentError instead of FormatException.
     return value;
   }
 }

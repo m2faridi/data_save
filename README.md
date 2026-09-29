@@ -45,6 +45,26 @@ fresh native values across isolates or background engines, consider
 - Uses host-only cookies with `SameSite=Lax` and `Secure` on HTTPS.
 - Supports Flutter Web builds compiled to JavaScript or WebAssembly.
 
+## Performance
+
+Native `removeAll()` and `removeAllLarge()` use a single SharedPreferences clear
+operation, avoiding a separate backend call for every key. The configured
+SharedPreferences prefix and allowList still apply.
+
+On web, repeated reads reuse parsed and decoded cookies while the browser's
+cookie header is unchanged. Each read still checks the current header, so external
+cookie changes and expiration are visible immediately. The browser access itself
+remains synchronous.
+
+To measure repeated reads with 1, 25, and 100 cookies on your machine, run:
+
+```sh
+flutter test --platform chrome test/benchmark/web_read_benchmark.dart
+```
+
+This benchmark reports the median of seven samples in a development build.
+Results depend on the browser, device, cookie count, and workload.
+
 ## Installation
 
 ```yaml
